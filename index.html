@@ -1,0 +1,295 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+function openFile(event) {
+  var input = event.target;
+  var reader = new FileReader();
+
+  reader.onload = function(){
+    var text = [];
+    var node = document.getElementById('output');
+    text = reader.result;
+
+    var NumAry; var col = 100;
+    NumAry = StrToAry(text);
+    aven = Average(NumAry, col);
+
+    var r = 6;
+    NumAry = RS(NumAry, r, NumAry.length);
+
+    var ta = 12; tb = 26; tc = 9;
+    NumAry = DI(NumAry, NumAry.length);
+    NumAry = EMA(NumAry, ta, NumAry.length);
+    NumAry = EMA(NumAry, tb, NumAry.length);
+    NumAry = DIF(NumAry, tb, NumAry.length);
+    NumAry = OSC(NumAry, tc, NumAry.length);
+
+    BuySellMark = BuySell(NumAry, aven);
+
+    drawplot(NumAry, BuySellMark);
+  }
+  reader.readAsText(input.files[0]);
+}
+
+function StrToAry(rawdata) {
+  var StrByLine = rawdata.split('\n');
+  var row = StrByLine.length-1;
+  var col = 100;
+  num = new Array(row);
+  for (i = 0; i < row; i++) {
+    if (i == 0) {
+      StrByLine[i]=StrByLine[i].replace(/\//g,"-");
+      num[i] = new Array(col);
+      num[i] = StrByLine[i].split("\t");
+    } else {
+        num[i] = new Array(col);
+        num[i] = StrByLine[i].split('\t');
+    }
+  }
+  return num;
+}
+
+function DI(org, n) {
+  var col = 100; var di = 0;
+  org[n] = new Array(col);
+  for (var i = 0; i < col; i++) {
+    di = (Number(org[2][i]) + Number(org[3][i]) + Number(2*org[4][i])) / 4;
+    org[n][i] = di;
+  }
+  return org;
+}
+
+function EMA(ema, day, n) {
+  var col = 100; var sumdi = 0; var avedi = 0;
+  ema[n] = new Array(col);
+  for (var i = 0; i < day-1; i++) {
+    sumdi += ema[7][i];
+  }
+  avedi = sumdi / day;
+  ema[n][day-1] = avedi;
+  for (var j = day; j < col; j++){
+    ema[n][j] = ema[n][j-1]*(day-1)/(day+1) + ema[7][j]*2/(day+1);
+  }
+  return ema;
+}
+
+function DIF(dif, day, n) {
+  var col = 100;
+  dif[n] = new Array(col);
+  for (var i = day-1; i < col; i++){
+    if (dif[8][i]*dif[9][i]>0) {
+      dif[n][i] = dif[8][i] - dif[9][i];
+    }
+  }
+  return dif;
+}
+
+function OSC(osc, day, n) {
+  var col = 100; var dif = 0; var macd = 0;
+  osc[n] = new Array(col);
+  for (var i = 25; i <= 33; i++) {
+    dif += osc[10][i];
+  }
+  macd = dif / day;
+  osc[n][33] = osc[10][33] - macd;
+  for (var i = 34; i < col; i++) {
+    macd = osc[n][i-1]*(day-1)/(day+1) + osc[10][i]*2/(day+1);
+    osc[n][i] = osc[10][i] - macd;
+  }
+  return osc;
+}
+
+function RS(txt, a, b) {
+  var col = 100; var rs; var rsi = []; var rpos; var rneg;
+  txt[b] = new Array(col);
+  for (i = 0 ; i<a; i+=1) {
+    txt[b][i] = [];
+  }
+  for (var i = a; i < col; i+=1) {
+    r = 0; rs = 0; rsi = []; rpos = 0; rneg = 0;
+    for (var j = i; j >= i-a+1; j-=1) {
+      r = (parseFloat(txt[4][j]) - parseFloat(txt[4][j-1])) / parseFloat(txt[4][j-1]);
+      if (r >= 0) {
+        rpos += r;
+      } else {
+         rneg += 0-r;
+        }
+    }
+    rs = rpos / rneg;
+    rsi = 100 - (100 / (1+rs));
+    txt[b][i] = Number(rsi.toFixed(2));
+  }
+  return txt;
+}
+
+function Average(nb, c) {
+  var sumn = Number(nb[5][0]); ans = 0;
+  for (var i = 0 ; i <= c-1; i+=1) {
+    test = (Number(nb[5][i+1]) - Number(nb[5][i])) / Number(nb[5][i]);
+    if (test < 2) {
+      sumn += Number(nb[5][i+1]);
+    }
+  }
+  ans = sumn/c;
+  return ans;
+}
+
+function BuySell(NA, n) {
+  var col = NA[0].length; var tbuy = []; var pbuy = []; var tsell = []; var psell = []; var roi = []; var sumroi = 0;
+  var j = 0; var k = 0; var flag = false; var result = new Array(4); var maxroi = 0; var minroi = 0; var win = 0;
+  for (var i = 0; i < col; i+=1) {
+    if (i > 0 && (NA[11][i-1] < 0) && (NA[11][i] > 0) && flag == false) {
+      tbuy[j] = NA[0][i];
+      pbuy[j] = NA[4][i];
+      flag = true;
+      j+=1;
+    }
+    if (i > 0 && (NA[11][i-1] > 0) && (NA[11][i] < 0) && flag == true && (NA[0][i] != tbuy[j-1])) {
+      tsell[k] = NA[0][i];
+      psell[k] = NA[4][i];
+      flag = false;
+      k+=1;
+    }
+  }
+
+  if (j == 0){
+    for (var i = 0; i < col; i+=1) {
+      if ((NA[6][i] > 0) && (NA[6][i] <= 20) && flag == false && (NA[5][i] > n)) {
+        tbuy[j] = NA[0][i];
+        pbuy[j] = NA[4][i];
+        flag = true;
+        j+=1;
+      }
+      if ((NA[6][i] >= 80) && (NA[6][i] <= 100) && flag == true && (NA[0][i] != tbuy[j-1]) && (NA[5][i] > n)) {
+        tsell[k] = NA[0][i];
+        psell[k] = NA[4][i];
+        flag = false;
+        k+=1;
+      }
+    }
+  }
+
+  if ((flag == true) && (pbuy.length > psell.length)) {
+    tsell[k] = NA[0][i-1];
+    psell[k] = NA[4][i-1];
+  } 
+
+  minroi = (psell[0] - pbuy[0]) / pbuy[0];
+  maxroi = (psell[0] - pbuy[0]) / pbuy[0];
+
+  for (i = 0; i < psell.length; i+=1) {
+    roi[i] = (psell[i] - pbuy[i]) / pbuy[i];
+    sumroi += roi[i];
+    if (i != 0){
+      if (roi[i] < minroi){   
+        minroi = roi[i];
+      }
+      if (roi[i] > maxroi){ 
+        maxroi = roi[i];
+      }
+    }
+    if (roi[i] > 0) {
+      win += roi[i];
+    }
+  }
+
+  result[0]=tbuy;
+  result[1]=pbuy;
+  result[2]=tsell;
+  result[3]=psell;
+  result[4]=roi;
+  n = roi.length;
+  averoi = Number((sumroi*100).toFixed(4))/n;
+  maxroi = (maxroi*100).toFixed(4);
+  minroi = (minroi*100).toFixed(4);
+  win = Number((win*100).toFixed(4))/n;
+
+  document.getElementById("roi").innerHTML = 
+  "累計報酬率 = " + (sumroi*100).toFixed(4) + "%　　" + "平均報酬率 = " + averoi + "%　　" + "最大報酬率 = " + maxroi + "%　　" + "最小報酬率 = " + minroi + "%　　" + "交易次數 = " + n + "次　　" + "勝率 = " + win + "%";
+  return result;
+}
+
+function drawplot(NumAry, buysellxy) {
+  var col = NumAry[0].length;
+  var trace1 = {
+    type: 'scatter',
+    x: NumAry[0], 
+    y: NumAry[4],
+    mode: 'lines',
+    name: '收盤價', 
+    line: {
+      color: 'blue',
+      width: 1,
+      smoothing: 0
+    }
+  };
+
+  var trace2 = {
+    type: 'bar',
+    x: NumAry[0], 
+    y: NumAry[11],
+    mode: 'bar',
+    name: 'OSC', 
+  };
+
+  var trace3 = {
+    x: buysellxy[0],
+    y: buysellxy[1],
+    mode: 'markers+text',
+    name: '買入點',
+    textposition: 'top',
+    type: 'scatter',
+    marker: {
+      color: 'red',
+      size: 5,
+      symbol: 'square'
+    }   
+  };
+
+  var trace4 = {
+    x: buysellxy[2],
+    y: buysellxy[3],
+    mode: 'markers+text',
+    name: '賣出點',
+    textposition: 'top',
+    type: 'scatter',
+    marker: {
+      color: 'Black',
+      size: 5,
+      symbol: 'cross'
+    } 
+  };
+
+  var data = [trace1, trace2, trace3, trace4];
+  var layout = {
+    dragmode: 'zoom', 
+    width: 1200,
+    height: 600,
+    showlegend: true, 
+    xaxis: {
+      autorange: true, 
+      domain: [0, 1], 
+      range: ['2017-01-4', '2017-06-7'], 
+      rangeslider: {range: ['2017-01-4', '2017-06-7']}, 
+      title: 'Date', 
+      type: 'date'
+    }, 
+    yaxis: {
+      autorange: true, 
+      domain: [0, 1], 
+      range: [130, 180], 
+      type: 'linear'
+    }
+  };
+  Plotly.plot('output', data, layout);
+}
+</script>
+</head>
+<body>
+<font face="DFKai-sb" size="6">技術分析之程式設計　　　</font><br><br>
+<input type='file' accept='text/plain' onchange='openFile(event)'>
+<div id ="roi"></div><div id='output'></div>
+</body>
+</html>
