@@ -31,6 +31,9 @@ function openFile(event) {
     drawplot(NumAry, BuySellMark);
   }
   reader.readAsText(input.files[0]);
+
+  table = Tab();
+  document.getElementById('table');
 }
 
 function StrToAry(rawdata) {
@@ -138,7 +141,7 @@ function Average(nb, c) {
 
 function BuySell(NA, n) {
   var col = NA[0].length; var tbuy = []; var pbuy = []; var tsell = []; var psell = []; var roi = []; var sumroi = 0;
-  var j = 0; var k = 0; var flag = false; var result = new Array(4); var maxroi = 0; var minroi = 0; var win = 0;
+  var j = 0; var k = 0; var flag = false; var result = new Array(4); var maxroi = 0; var minroi = 0; var win = [];
   for (var i = 0; i < col; i+=1) {
     if (i > 0 && (NA[11][i-1] < 0) && (NA[11][i] > 0) && flag == false) {
       tbuy[j] = NA[0][i];
@@ -193,7 +196,7 @@ function BuySell(NA, n) {
     if (roi[i] > 0) {
       win += roi[i];
     }
-  }
+  } 
 
   result[0]=tbuy;
   result[1]=pbuy;
@@ -201,13 +204,14 @@ function BuySell(NA, n) {
   result[3]=psell;
   result[4]=roi;
   n = roi.length;
-  averoi = Number((sumroi*100).toFixed(4))/n;
-  maxroi = (maxroi*100).toFixed(4);
-  minroi = (minroi*100).toFixed(4);
-  win = Number((win*100).toFixed(4))/n;
+  averoi = Number((sumroi*100)/n).toFixed(2);
+  maxroi = (maxroi*100).toFixed(2);
+  minroi = (minroi*100).toFixed(2);
+  win = Number((win.length)/n).toFixed(2);
 
   document.getElementById("roi").innerHTML = 
-  "累計報酬率 = " + (sumroi*100).toFixed(4) + "%　　" + "平均報酬率 = " + averoi + "%　　" + "最大報酬率 = " + maxroi + "%　　" + "最小報酬率 = " + minroi + "%　　" + "交易次數 = " + n + "次　　" + "勝率 = " + win + "%";
+  "勝率 = " + win + "%  " + "交易次數 = " + n + "次  " + "最大報酬率 = " + maxroi + "%  " + "最小報酬率 = " + minroi + "%  " + 
+  "平均報酬率 = " + averoi + "%  " + "累計報酬率 = " + (sumroi*100).toFixed(2) + "%";
   return result;
 }
 
@@ -262,11 +266,24 @@ function drawplot(NumAry, buysellxy) {
     } 
   };
 
-  var data = [trace1, trace2, trace3, trace4];
+  var trace5 = {
+    type: 'scatter',
+    x: NumAry[0], 
+    y: NumAry[5],
+    mode: 'lines',
+    name: '成交量', 
+    line: {
+      color: 'yellow',
+      width: 1,
+      smoothing: 0
+    }
+  };
+
+  var data = [trace1, trace2, trace3, trace4,];
   var layout = {
     dragmode: 'zoom', 
-    width: 1200,
-    height: 600,
+    width: 1345,
+    height: 500,
     showlegend: true, 
     xaxis: {
       autorange: true, 
@@ -285,11 +302,97 @@ function drawplot(NumAry, buysellxy) {
   };
   Plotly.plot('output', data, layout);
 }
+
+function Tab() {
+  var bbb = [];
+  bbb[11] = Array("  勝率  ","  交易次數  ","  最大報酬率  ","  最小報酬率  ","  平均報酬率  ","  累計報酬率  ");
+
+  bbb[0] = Array("  臺 塑 (1301)  "," 5.71% ","7次","1.45%","-1.99%","-0.17%","-1.20%");
+  bbb[1] = Array("  鼎 翰 (3611)  "," 7.80% ","5次","1.23%","-1.61%","-0.11%","-0.57%");
+  bbb[2] = Array("  威強電 (3022)  "," 20.50% ","2次","1.80%","0.63%","1.22%","2.44%");
+  bbb[3] = Array("  新 唐 (4919)  "," 9.75% ","4次","8.45%","-6.20%","0.75%","3.01%");
+  bbb[4] = Array("  台積電 (1330)  "," 9.75% ","4次","11.32%","-1.08%","2.83%","11.33%");
+  bbb[5] = Array("  德 麥 (1264)  "," 9.00% ","2次","14.61%","0.00%","7.31%","14.61%");  
+  bbb[6] = Array("  鴻 海 (2317)  "," 9.50% ","2次","16.80%","-0.89%","7.95%","15.90%");
+  bbb[7] = Array("  弘 塑 (3131)  "," 15.00% ","4次","22.03%","-2.50%","5.17%","20.70%");
+  bbb[8] = Array("  翔 名 (8091)  "," 19.00% ","1次","23.09%","23.09%","23.09%","23.09%");
+  bbb[9] = Array("  統一超 (2912)  "," 9.75% ","4次","24.89%","-0.44%","6.11%","24.45%");
+  bbb[10] = Array("  玉晶光 (3406)  "," 4.75% ","4次","45.93%","-3.74%","10.15%","40.62%");
+
+  var row = document.getElementById("myTr");
+  var x0 = row.insertCell(-1);  x0.innerHTML = bbb[11][0];
+  var x1 = row.insertCell(-1);  x1.innerHTML = bbb[11][1];
+  var x2 = row.insertCell(-1);  x2.innerHTML = bbb[11][2];
+  var x3 = row.insertCell(-1);  x3.innerHTML = bbb[11][3];
+  var x4 = row.insertCell(-1);  x4.innerHTML = bbb[11][4];
+  var x5 = row.insertCell(-1);  x5.innerHTML = bbb[11][5];
+
+  for (i = 0; i <= 10; i++) {
+    var table = document.getElementById("myTable");
+    var footer = table.createTFoot();
+    var row = footer.insertRow(0);  
+    var cell0 = row.insertCell(0);  cell0.innerHTML = bbb[i][6];
+    var cell1 = row.insertCell(0);  cell1.innerHTML = bbb[i][5];
+    var cell2 = row.insertCell(0);  cell2.innerHTML = bbb[i][4];
+    var cell3 = row.insertCell(0);  cell3.innerHTML = bbb[i][3];
+    var cell4 = row.insertCell(0);  cell4.innerHTML = bbb[i][2];
+    var cell5 = row.insertCell(0);  cell5.innerHTML = bbb[i][1];
+    var cell6 = row.insertCell(0);  cell6.innerHTML = bbb[i][0];
+  }
+}
 </script>
 </head>
 <body>
-<font face="DFKai-sb" size="6">技術分析之程式設計　　　</font><br><br>
-<input type='file' accept='text/plain' onchange='openFile(event)'>
-<div id ="roi"></div><div id='output'></div>
+<h1 class="color family"> 技術分析之程式設計      
+<font face="DFKai-sb" size="4">使用之技術分析為：</font><font face="DFKai-sb" size="4" color="red">OSC、RSI、成交量</font></h1><br>
+ <input type='file' accept='text/plain' onchange='openFile(event)'><br>
+<div id ="roi"><br></div><div id='output'></div>
+<table id="myTable" align="center">
+  <tr id="myTr">
+    <th>   </th>
+  </tr>
+</table><br>
+<style type="text/css">
+  
+body {
+  background-color: #F0F8FF
+}
+
+h1.family {
+  font-family:"標楷體";
+}
+
+h1.color {
+  color: #000080
+}
+
+input[type=file] {
+
+  color: #800000
+}
+
+table{
+  color: #4169E1;
+  font-family: "arial";
+  font-size:16px;
+  border: 1px solid #C0C0C0;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+tr:nth-child(even) {
+  background-color:  #DCDCDC;
+}
+
+div{
+  text-align: center;
+  color: #800000
+}
+
+td{
+  padding:5px;
+  }
+
+</style>
 </body>
 </html>
