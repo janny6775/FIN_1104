@@ -133,6 +133,8 @@ function Average(nb, c) {
     test = (Number(nb[5][i+1]) - Number(nb[5][i])) / Number(nb[5][i]);
     if (test < 2) {
       sumn += Number(nb[5][i+1]);
+    } else {
+      c = c - 1;
     }
   }
   ans = sumn/c;
@@ -158,6 +160,7 @@ function BuySell(NA, n) {
   }
 
   if (j == 0){
+    alert('osc沒適合之買賣點，因此使用rsi及成交量判斷');
     for (var i = 0; i < col; i+=1) {
       if ((NA[6][i] > 0) && (NA[6][i] <= 20) && flag == false && (NA[5][i] > n)) {
         tbuy[j] = NA[0][i];
@@ -175,6 +178,7 @@ function BuySell(NA, n) {
   }
 
   if ((flag == true) && (pbuy.length > psell.length)) {
+    alert('至最後一天仍沒賣點，因此以最後一天收盤價賣出');
     tsell[k] = NA[0][i-1];
     psell[k] = NA[4][i-1];
   } 
@@ -210,8 +214,8 @@ function BuySell(NA, n) {
   win = Number((win.length)/n).toFixed(2);
 
   document.getElementById("roi").innerHTML = 
-  "勝率 = " + win + "%  " + "交易次數 = " + n + "次  " + "最大報酬率 = " + maxroi + "%  " + "最小報酬率 = " + minroi + "%  " + 
-  "平均報酬率 = " + averoi + "%  " + "累計報酬率 = " + (sumroi*100).toFixed(2) + "%";
+  "勝率 = " + win + "%　　" + "交易次數 = " + n + "次　　" + "最大報酬率 = " + maxroi + "%　　" + "最小報酬率 = " + minroi + "%　　" + 
+  "平均報酬率 = " + averoi + "%　　" + "累計報酬率 = " + (sumroi*100).toFixed(2) + "%";
   return result;
 }
 
@@ -267,11 +271,19 @@ function drawplot(NumAry, buysellxy) {
   };
 
   var trace5 = {
+    type: 'bar',
+    x: NumAry[0], 
+    y: NumAry[11],
+    mode: 'bar',
+    name: '成交量', 
+  };
+
+  var trace6 = {
     type: 'scatter',
     x: NumAry[0], 
-    y: NumAry[5],
+    y: NumAry[6],
     mode: 'lines',
-    name: '成交量', 
+    name: 'rsi', 
     line: {
       color: 'yellow',
       width: 1,
@@ -279,7 +291,7 @@ function drawplot(NumAry, buysellxy) {
     }
   };
 
-  var data = [trace1, trace2, trace3, trace4,];
+  var data = [trace1, trace2, trace3, trace4, trace6];
   var layout = {
     dragmode: 'zoom', 
     width: 1345,
@@ -305,19 +317,19 @@ function drawplot(NumAry, buysellxy) {
 
 function Tab() {
   var bbb = [];
-  bbb[11] = Array("  勝率  ","  交易次數  ","  最大報酬率  ","  最小報酬率  ","  平均報酬率  ","  累計報酬率  ");
+  bbb[11] = Array("　　勝率　　","　　交易次數　　","　　最大報酬率　　","　　最小報酬率　　","　　平均報酬率　　","　　累計報酬率　　");
 
-  bbb[0] = Array("  臺 塑 (1301)  "," 5.71% ","7次","1.45%","-1.99%","-0.17%","-1.20%");
-  bbb[1] = Array("  鼎 翰 (3611)  "," 7.80% ","5次","1.23%","-1.61%","-0.11%","-0.57%");
-  bbb[2] = Array("  威強電 (3022)  "," 20.50% ","2次","1.80%","0.63%","1.22%","2.44%");
-  bbb[3] = Array("  新 唐 (4919)  "," 9.75% ","4次","8.45%","-6.20%","0.75%","3.01%");
-  bbb[4] = Array("  台積電 (1330)  "," 9.75% ","4次","11.32%","-1.08%","2.83%","11.33%");
-  bbb[5] = Array("  德 麥 (1264)  "," 9.00% ","2次","14.61%","0.00%","7.31%","14.61%");  
-  bbb[6] = Array("  鴻 海 (2317)  "," 9.50% ","2次","16.80%","-0.89%","7.95%","15.90%");
-  bbb[7] = Array("  弘 塑 (3131)  "," 15.00% ","4次","22.03%","-2.50%","5.17%","20.70%");
-  bbb[8] = Array("  翔 名 (8091)  "," 19.00% ","1次","23.09%","23.09%","23.09%","23.09%");
-  bbb[9] = Array("  統一超 (2912)  "," 9.75% ","4次","24.89%","-0.44%","6.11%","24.45%");
-  bbb[10] = Array("  玉晶光 (3406)  "," 4.75% ","4次","45.93%","-3.74%","10.15%","40.62%");
+  bbb[0] = Array("　　臺　塑 (1301)　　","　5.71%　","7次","1.45%","-1.99%","-0.17%","-1.20%");
+  bbb[1] = Array("　　鼎　翰 (3611)　　","　7.80%　","5次","1.23%","-1.61%","-0.11%","-0.57%");
+  bbb[2] = Array("　　威強電 (3022)　　","　20.50%　","2次","1.80%","0.63%","1.22%","2.44%");
+  bbb[3] = Array("　　新　唐 (4919)　　","　9.75%　","4次","8.45%","-6.20%","0.75%","3.01%");
+  bbb[4] = Array("　　台積電 (1330)　　","　9.75%　","4次","11.32%","-1.08%","2.83%","11.33%");
+  bbb[5] = Array("　　德　麥 (1264)　　","　9.00%　","2次","14.61%","0.00%","7.31%","14.61%");  
+  bbb[6] = Array("　　鴻　海 (2317)　　","　9.50%　","2次","16.80%","-0.89%","7.95%","15.90%");
+  bbb[7] = Array("　　弘　塑 (3131)　　","　15.00%　","4次","22.03%","-2.50%","5.17%","20.70%");
+  bbb[8] = Array("　　翔　名 (8091)　　","　19.00%　","1次","23.09%","23.09%","23.09%","23.09%");
+  bbb[9] = Array("　　統一超 (2912)　　","　9.75%　","4次","24.89%","-0.44%","6.11%","24.45%");
+  bbb[10] = Array("　　玉晶光 (3406)　　","　4.75%　","4次","45.93%","-3.74%","10.15%","40.62%");
 
   var row = document.getElementById("myTr");
   var x0 = row.insertCell(-1);  x0.innerHTML = bbb[11][0];
@@ -343,13 +355,13 @@ function Tab() {
 </script>
 </head>
 <body>
-<h1 class="color family"> 技術分析之程式設計      
+<h1 class="color family">　技術分析之程式設計　　　　　　
 <font face="DFKai-sb" size="4">使用之技術分析為：</font><font face="DFKai-sb" size="4" color="red">OSC、RSI、成交量</font></h1><br>
- <input type='file' accept='text/plain' onchange='openFile(event)'><br>
+　<input type='file' accept='text/plain' onchange='openFile(event)'><br>
 <div id ="roi"><br></div><div id='output'></div>
 <table id="myTable" align="center">
   <tr id="myTr">
-    <th>   </th>
+    <th>　　　</th>
   </tr>
 </table><br>
 <style type="text/css">
